@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Inserisci codice regalo</title>
+<style>
+  body{
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    display:flex;align-items:center;justify-content:center;
+    height:100vh;background:#f3f4f6;margin:0;
+  }
+  .card{
+    background:#fff;padding:28px;border-radius:12px;
+    box-shadow:0 8px 30px rgba(0,0,0,.08);
+    width:360px;max-width:95%;
+  }
+  h1{font-size:20px;margin:0 0 12px}
+  label{display:block;margin:8px 0 6px;font-size:13px;color:#444}
+  input[type="text"]{
+    width:100%;padding:10px;border-radius:8px;
+    border:1px solid #ddd;font-size:15px;box-sizing:border-box;
+  }
+  button{
+    margin-top:12px;width:100%;padding:10px;border-radius:8px;
+    border:0;background:#0b74de;color:white;font-weight:600;cursor:pointer;
+  }
+  .msg{
+    margin-top:14px;padding:12px;border-radius:10px;
+    background:#f8fafc;color:#064e3b;display:none;
+  }
+  .msg.error{background:#fff1f2;color:#7f1d1d}
+  .voucher{
+    margin-top:12px;padding:14px;border-radius:10px;
+    border:1px dashed #cbd5e1;display:none;
+  }
+  .actions{display:flex;gap:8px;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h1>Inserisci il codice per il regalo 🎁</h1>
+    <label for="code">Codice</label>
+    <input id="code" type="text" inputmode="text" autocomplete="off" />
+    <button id="checkBtn">Verifica codice</button>
+
+    <div id="message" class="msg" role="status"></div>
+
+    <div id="voucher" class="voucher" aria-hidden="true">
+      <h2 id="voucherTitle">Un regalo speciale 🎉</h2>
+      <p id="voucherText">
+        Indossa la giacca dei tuoi sogni! Buon compleanno!
+      </p>
+      <div class="actions">
+        
+        
+      </div>
+    </div>
+  </div>
+
+<script>
+// ======== CONFIGURAZIONE ========
+const MODE = 'plain'; // oppure 'hash'
+const allowedCodes = ['BUONO2025']; // metti qui il codice corretto
+const allowedHashes = []; // se usi SHA-256
+const voucherTitle = 'Buono per un regalo speciale 🎉';
+const voucherBody  = 'Indossa la giacca dei tuoi sogni! Buon compleanno!';
+const MAX_ATTEMPTS = 6;
+// ======== END CONFIG ========
+
+const input = document.getElementById('code');
+const btn = document.getElementById('checkBtn');
+const msg = document.getElementById('message');
+const voucher = document.getElementById('voucher');
+const voucherTitleEl = document.getElementById('voucherTitle');
+const voucherTextEl = document.getElementById('voucherText');
+const printBtn = document.getElementById('printBtn');
+const copyBtn = document.getElementById('copyBtn');
+
+voucherTitleEl.textContent = voucherTitle;
+voucherTextEl.textContent = voucherBody;
+
+let attempts = 0;
+
+btn.addEventListener('click', handleCheck);
+input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') handleCheck() });
+printBtn.addEventListener('click', ()=>{ window.print(); });
+copyBtn.addEventListener('click', ()=>{ 
+  navigator.clipboard.writeText(input.value).then(()=> showMessage('Codice copiato negli appunti', false)); 
+});
+
+function showMessage(text, isError){
+  msg.style.display = 'block';
+  msg.className = 'msg' + (isError ? ' error' : '');
+  msg.textContent = text;
+  setTimeout(()=> { msg.style.display = 'none'; }, 4000);
+}
+
+async function handleCheck(){
+  const code = (input.value || '').trim();
+  if(!code){ showMessage('Inserisci un codice prima', true); return; }
+  attempts++;
+  if(attempts > MAX_ATTEMPTS){ showMessage('Hai superato il numero massimo di tentativi.', true); btn.disabled=true; input.disabled=true; return; }
+
+  if(MODE === 'plain'){
+    const ok = allowedCodes.includes(code);
+    if(ok) unlock(code);
+    else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
+  } else if(MODE === 'hash'){
+    const h = await sha256(code);
+    const ok = allowedHashes.includes(h);
+    if(ok) unlock(code);
+    else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
+  }
+}
+
+function unlock(code){
+  voucher.style.display = 'block';
+  voucher.setAttribute('aria-hidden','false');
+  showMessage('Codice corretto! Buono sbloccato.', false);
+  input.disabled = true; btn.disabled = true;
+  voucherTextEl.innerHTML = `
+    ${voucherBody}<br><strong>Codice usato:</strong> ${escapeHtml(code)}
+    <br><br>
+    <img src="buono.png" alt="Buono regalo" style="max-width:100%;border-radius:10px;margin-top:10px;">
+  `;
+}
+
+function escapeHtml(s){ 
+  return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); 
+}
+
+async function sha256(str){
+  const enc = new TextEncoder();
+  const data = enc.encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+</script>
+</body>
+</html>
