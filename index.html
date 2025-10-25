@@ -118,14 +118,16 @@ async function handleCheck(){
     else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
   }
 }
-
 function unlock(code){
   voucher.style.display = 'block';
   voucher.setAttribute('aria-hidden','false');
   showMessage('Codice corretto! Buono sbloccato.', false);
-  input.disabled = true; btn.disabled = true;
+  input.disabled = true; 
+  btn.disabled = true;
+
+  // Testo centrato e senza "Codice usato"
   voucherTextEl.innerHTML = `
-    ${voucherBody}<br><strong>Codice usato:</strong> ${escapeHtml(code)}
+    ${voucherBody}
     <br><br>
     <img src="buono.png" alt="Buono regalo" style="max-width:100%;border-radius:10px;margin-top:10px;">
   `;
@@ -145,5 +147,6 @@ async function sha256(str){
 </script>
 </body>
 </html>
+
 
 
