@@ -39,9 +39,9 @@
   .voucher p {
     text-align: center;
   }
-  /* 🔄 Rotazione immagine */
+  /* 🔄 Rotazione immagine in senso antiorario */
   .rotated-img {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
     max-width: 100%;
     border-radius: 10px;
     margin-top: 10px;
@@ -123,7 +123,7 @@ function unlock(code){
   input.disabled = true; 
   btn.style.display = 'none'; // 👈 nasconde il tasto "Verifica codice"
 
-  // Mostra l’immagine ruotata
+  // Mostra l’immagine ruotata in senso antiorario
   voucherTextEl.innerHTML = `
     ${voucherBody}
     <br><br>
