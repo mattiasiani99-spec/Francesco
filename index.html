@@ -39,6 +39,13 @@
   .voucher p {
     text-align: center;
   }
+  /* 🔄 Rotazione immagine */
+  .rotated-img {
+    transform: rotate(90deg);
+    max-width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
 </style>
 </head>
 <body>
@@ -55,11 +62,7 @@
       <p id="voucherText">
         Indossa la giacca dei tuoi sogni! Buon compleanno!
       </p>
-      <div class="actions">
-        
-        
-      </div>
-      
+      <div class="actions"></div>
     </div>
   </div>
 
@@ -79,8 +82,6 @@ const msg = document.getElementById('message');
 const voucher = document.getElementById('voucher');
 const voucherTitleEl = document.getElementById('voucherTitle');
 const voucherTextEl = document.getElementById('voucherText');
-const printBtn = document.getElementById('printBtn');
-const copyBtn = document.getElementById('copyBtn');
 
 voucherTitleEl.textContent = voucherTitle;
 voucherTextEl.textContent = voucherBody;
@@ -89,10 +90,6 @@ let attempts = 0;
 
 btn.addEventListener('click', handleCheck);
 input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') handleCheck() });
-printBtn.addEventListener('click', ()=>{ window.print(); });
-copyBtn.addEventListener('click', ()=>{ 
-  navigator.clipboard.writeText(input.value).then(()=> showMessage('Codice copiato negli appunti', false)); 
-});
 
 function showMessage(text, isError){
   msg.style.display = 'block';
@@ -118,23 +115,20 @@ async function handleCheck(){
     else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
   }
 }
+
 function unlock(code){
   voucher.style.display = 'block';
   voucher.setAttribute('aria-hidden','false');
   showMessage('Codice corretto! Buono sbloccato.', false);
   input.disabled = true; 
-  btn.disabled = true;
+  btn.style.display = 'none'; // 👈 nasconde il tasto "Verifica codice"
 
-  // Testo centrato e senza "Codice usato"
+  // Mostra l’immagine ruotata
   voucherTextEl.innerHTML = `
     ${voucherBody}
     <br><br>
-    <img src="Regalo.png" alt="Regalino" style="max-width:100%;border-radius:10px;margin-top:10px;">
+    <img src="Regalo.png" alt="Regalino" class="rotated-img">
   `;
-}
-
-function escapeHtml(s){ 
-  return String(s).replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); 
 }
 
 async function sha256(str){
@@ -147,8 +141,3 @@ async function sha256(str){
 </script>
 </body>
 </html>
-
-
-
-
-
