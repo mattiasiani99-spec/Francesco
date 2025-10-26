@@ -5,74 +5,113 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Inserisci codice regalo</title>
 <style>
-  body{
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    display:flex;align-items:center;justify-content:center;
-    height:100vh;background:#f3f4f6;margin:0;
+  body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: #f3f4f6;
+    margin: 0;
   }
-  .card{
-    background:#fff;padding:28px;border-radius:12px;
-    box-shadow:0 8px 30px rgba(0,0,0,.08);
-    width:360px;max-width:95%;
-  }
-  h1{font-size:20px;margin:0 0 12px}
-  label{display:block;margin:8px 0 6px;font-size:13px;color:#444}
-  input[type="text"]{
-    width:100%;padding:10px;border-radius:8px;
-    border:1px solid #ddd;font-size:15px;box-sizing:border-box;
-  }
-  button{
-    margin-top:12px;width:100%;padding:10px;border-radius:8px;
-    border:0;background:#0b74de;color:white;font-weight:600;cursor:pointer;
-  }
-  .msg{
-    margin-top:14px;padding:12px;border-radius:10px;
-    background:#f8fafc;color:#064e3b;display:none;
-  }
-  .msg.error{background:#fff1f2;color:#7f1d1d}
-  .voucher{
-    margin-top:12px;padding:14px;border-radius:10px;
-    border:1px dashed #cbd5e1;display:none;
-  }
-  .actions{display:flex;gap:8px;margin-top:10px}
-  .voucher h2, 
-  .voucher p {
+
+  .card {
+    background: #fff;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    width: 360px;
+    max-width: 95%;
     text-align: center;
   }
-  /* 🔄 Rotazione immagine in senso antiorario */
-  .rotated-img {
-    transform: rotate(-90deg);
-    max-width: 100%;
+
+  h1 {
+    font-size: 20px;
+    margin: 0 0 12px;
+  }
+
+  label {
+    display: block;
+    margin: 8px 0 6px;
+    font-size: 13px;
+    color: #444;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+    box-sizing: border-box;
+  }
+
+  button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 0;
+    background: #0b74de;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .msg {
+    margin-top: 14px;
+    padding: 12px;
     border-radius: 10px;
-    margin-top: 10px;
+    background: #f8fafc;
+    color: #064e3b;
+    display: none;
+  }
+
+  .msg.error {
+    background: #fff1f2;
+    color: #7f1d1d;
+  }
+
+  /* Contenitore immagine sbloccata */
+  .voucher {
+    display: none;
+    overflow: hidden;
+    border-radius: 10px;
+    width: fit-content;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: white;
+  }
+
+  /* Immagine ruotata e ridotta */
+  .rotated-img {
+    transform: rotate(-90deg) scale(0.5); /* 🔄 ruotata e rimpicciolita */
+    transform-origin: center center;
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin: 0 auto;
   }
 </style>
 </head>
 <body>
-  <div class="card" role="main">
+  <div class="card" role="main" id="mainCard">
     <h1>Inserisci il codice per il regalo 🎁</h1>
     <label for="code">Codice</label>
     <input id="code" type="text" inputmode="text" autocomplete="off" />
     <button id="checkBtn">Verifica codice</button>
-
     <div id="message" class="msg" role="status"></div>
+  </div>
 
-    <div id="voucher" class="voucher" aria-hidden="true">
-      <h2 id="voucherTitle">Un regalo speciale 🎉</h2>
-      <p id="voucherText">
-        Indossa la giacca dei tuoi sogni! Buon compleanno!
-      </p>
-      <div class="actions"></div>
-    </div>
+  <div id="voucher" class="voucher" aria-hidden="true">
+    <img src="Regalo.png" alt="Regalino" class="rotated-img">
   </div>
 
 <script>
 // ======== CONFIGURAZIONE ========
 const MODE = 'plain'; // oppure 'hash'
-const allowedCodes = ['Giacca da moto']; // metti qui il codice corretto
+const allowedCodes = ['Giacca da moto']; // codice corretto
 const allowedHashes = []; // se usi SHA-256
-const voucherTitle = 'STO CAZZOOOOO !!! 🎉';
-const voucherBody  = 'Buon compleanno!';
 const MAX_ATTEMPTS = 3;
 // ======== END CONFIG ========
 
@@ -80,11 +119,7 @@ const input = document.getElementById('code');
 const btn = document.getElementById('checkBtn');
 const msg = document.getElementById('message');
 const voucher = document.getElementById('voucher');
-const voucherTitleEl = document.getElementById('voucherTitle');
-const voucherTextEl = document.getElementById('voucherText');
-
-voucherTitleEl.textContent = voucherTitle;
-voucherTextEl.textContent = voucherBody;
+const mainCard = document.getElementById('mainCard');
 
 let attempts = 0;
 
@@ -102,33 +137,32 @@ async function handleCheck(){
   const code = (input.value || '').trim();
   if(!code){ showMessage('Inserisci un codice prima', true); return; }
   attempts++;
-  if(attempts > MAX_ATTEMPTS){ showMessage('Hai superato il numero massimo di tentativi.', true); btn.disabled=true; input.disabled=true; return; }
+  if(attempts > MAX_ATTEMPTS){
+    showMessage('Hai superato il numero massimo di tentativi.', true);
+    btn.disabled = true;
+    input.disabled = true;
+    return;
+  }
 
   if(MODE === 'plain'){
     const ok = allowedCodes.includes(code);
-    if(ok) unlock(code);
+    if(ok) unlock();
     else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
   } else if(MODE === 'hash'){
     const h = await sha256(code);
     const ok = allowedHashes.includes(h);
-    if(ok) unlock(code);
+    if(ok) unlock();
     else showMessage(`Codice errato. Tentativi rimasti: ${Math.max(0, MAX_ATTEMPTS - attempts)}`, true);
   }
 }
 
-function unlock(code){
+function unlock(){
+  // Nasconde completamente la card con input e bottone
+  mainCard.style.display = 'none';
+
+  // Mostra solo l’immagine ridotta e ruotata
   voucher.style.display = 'block';
   voucher.setAttribute('aria-hidden','false');
-  showMessage('Codice corretto! Buono sbloccato.', false);
-  input.disabled = true; 
-  btn.style.display = 'none'; // 👈 nasconde il tasto "Verifica codice"
-
-  // Mostra l’immagine ruotata in senso antiorario
-  voucherTextEl.innerHTML = `
-    ${voucherBody}
-    <br><br>
-    <img src="Regalo.png" alt="Regalino" class="rotated-img">
-  `;
 }
 
 async function sha256(str){
